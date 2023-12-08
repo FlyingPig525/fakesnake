@@ -56,6 +56,8 @@ int main(void) {
         deathTimerMax = loadData[3];
     }
 
+    ti_Close(loadHandle);
+
     gfx_Begin();
 
     gfx_FillCircle(circleX, circleY, 5);
