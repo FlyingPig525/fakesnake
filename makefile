@@ -2,9 +2,9 @@
 # Makefile Options
 # ----------------------------
 
-NAME = FakSnak
+NAME = FakeSnak
 ICON = icon.png
-DESCRIPTION = "Snake adaptation"
+DESCRIPTION = "Snake but fake and weird"
 COMPRESSED = NO
 
 CFLAGS = -Wall -Wextra -Oz

@@ -5,6 +5,7 @@
 #include <sys/util.h>
 #include <ti/screen.h>
 #include <debug.h>
+#include <cstdint>
 
 bool checkInRange(int a, int b, int deviation) {
     if (a < b) {
@@ -15,6 +16,9 @@ bool checkInRange(int a, int b, int deviation) {
 
     return ((a - b) <= deviation || a == b);
 }
+
+void gfxa_createText(const char *string, uint8_t color, int x, int y);
+void gfxa_createText_Int(const char *string, uint8_t color, int x, int y, int addonInt, uint8_t addonColor, uint8_t length = 2);
 
 int main(void) {
     /* Key variable */
@@ -78,27 +82,15 @@ int main(void) {
         if (kb_Data[6] == kb_Enter) {
             gfx_FillScreen(0xFF);
 
-            gfx_SetTextXY(1, 1);
-            gfx_PrintString("Points: ");
-            gfx_SetTextXY(gfx_GetStringWidth("Points: "), 1);
-            gfx_PrintInt(points, 4);
+            gfxa_createText_Int("Points: ", 0x00, 1, 1, points, 0x07, 4);
 
-            gfx_SetTextXY(1, 15);
-            gfx_PrintString("1|More Apple Width - ");
-            gfx_SetTextXY(gfx_GetStringWidth("1|More Apple Width - "), 15);
-            gfx_PrintInt(circleRadius * 2, 4);
-            gfx_SetTextXY(gfx_GetStringWidth("1|More Apple Width - 0000 "), 15);
-            gfx_PrintString("Points");
+            gfxa_createText_Int("1|More Apple Width - ", 0x00, 1, 15, circleRadius * 2, 0x07, 4);
+            gfxa_createText("Points", 0x00, gfx_GetStringWidth("1|More Apple Width - 0000 "), 15);
 
-            gfx_SetTextXY(1, 30);
-            gfx_PrintString("2|+100ms Death Timer - ");
-            gfx_SetTextXY(gfx_GetStringWidth("2|+100ms Death Timer - "), 30);
-            gfx_PrintInt(deathTimerMax / 5 + 5, 4);
-            gfx_SetTextXY(gfx_GetStringWidth("2|+100ms Death Timer - 0000"), 30);
-            gfx_PrintString("Points");
+            gfxa_createText_Int("2|+100ms Death Timer - ", 0x00, 1, 30, deathTimerMax / 5 + 5, 0x07, 4);
+            gfxa_createText("Points", 0xFF, gfx_GetStringWidth("2|+100ms Death Timer - 0000"), 30);
 
-            gfx_SetTextXY(1, 45);
-            gfx_PrintString("0|Exit");
+            gfxa_createText("0|Exit", 0x00, 1, 45);
 
             bool menuDone = false;
 
@@ -155,11 +147,8 @@ int main(void) {
             if (deathTimer % 10 == 1) {
                 gfx_FillRectangle(1, GFX_LCD_HEIGHT - 10, GFX_LCD_WIDTH, 10);
             }
-            gfx_SetTextXY(1, GFX_LCD_HEIGHT - 10);
-            gfx_PrintString("Time until death (sec): ");
-            gfx_SetTextXY(gfx_GetStringWidth("Time until death (sec): "),
-                GFX_LCD_HEIGHT - 10);
-            gfx_PrintInt((deathTimerMax + 10 - deathTimer) / 10, 2);
+
+            gfxa_createText_Int("Time until death (sec): ", 0x00, 1, GFX_LCD_HEIGHT - 10, (deathTimerMax + 10 - deathTimer) / 10, 0x00);
             // dbg_printf("timer++\n");
             dbg_printf("deathTimer %d\n", deathTimer);
             dbg_printf("deathTimerMax %d\n", deathTimerMax);
@@ -190,3 +179,19 @@ int main(void) {
 
     return 0;
 }
+
+void gfxa_createText(const char *string, uint8_t color, int x, int y) {
+    gfx_SetTextFGColor(color);
+    gfx_SetTextXY(x, y);
+    gfx_PrintString(string);
+}
+
+void gfxa_createText_Int(const char *string, uint8_t color, int x, int y, int addonInt, uint8_t addonColor, uint8_t length) {
+    gfx_SetTextFGColor(color);
+    gfx_SetTextXY(x, y);
+    gfx_PrintString(string);
+    gfx_SetTextXY(gfx_GetStringWidth(string), y);
+    gfx_SetTextFGColor(addonColor);
+    gfx_PrintInt(addonInt, length);
+}
+
