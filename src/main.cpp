@@ -1,6 +1,7 @@
 #include <graphx.h>
 #include <keypadc.h>
 #include <stdlib.h>
+#include <fileioc.h>
 #include <sys/timers.h>
 #include <sys/util.h>
 #include <ti/screen.h>
@@ -16,9 +17,12 @@ bool checkInRange(int a, int b, int deviation) {
 
     return ((a - b) <= deviation || a == b);
 }
+uint8_t pointColorCheck(int points, int needed, uint8_t color1, uint8_t color2);
 
 void gfxa_createText(const char *string, uint8_t color, int x, int y);
 void gfxa_createText_Int(const char *string, uint8_t color, int x, int y, int addonInt, uint8_t addonColor, uint8_t length = 2);
+void gfxa_createFillRectangle(int x, int y, int width, int height, uint8_t color);
+void gfxa_createFillCircle(int x, int y, int radius, uint8_t color);
 
 int main(void) {
     /* Key variable */
@@ -35,10 +39,22 @@ int main(void) {
     int circleRadius = 5;
 
     int deathTimer = 0;
-    int deathTimerMax = 50;
+    int deathTimerMax = 60;
     int points = 0;
+    int totalPoints = 0;
 
     bool dead = false;
+    uint8_t loadHandle;
+    int loadData[] = { points, totalPoints, circleRadius, deathTimerMax };
+    loadHandle = ti_Open("FakeSnake_save", "r");
+
+    if (loadHandle != 0) {
+        ti_Read(loadData, sizeof(int), sizeof(loadData) / sizeof(int), loadHandle);
+        points = loadData[0];
+        totalPoints = loadData[1];
+        circleRadius = loadData[2];
+        deathTimerMax = loadData[3];
+    }
 
     gfx_Begin();
 
@@ -84,13 +100,14 @@ int main(void) {
 
             gfxa_createText_Int("Points: ", 0x00, 1, 1, points, 0x07, 4);
 
-            gfxa_createText_Int("1|More Apple Width - ", 0x00, 1, 15, circleRadius * 2, 0x07, 4);
+            gfxa_createText_Int("1|More Apple Width - ", 0x00, 1, 15, circleRadius * 2, pointColorCheck(points, circleRadius * 2, 0x07, 0xE0), 4);
             gfxa_createText("Points", 0x00, gfx_GetStringWidth("1|More Apple Width - 0000 "), 15);
 
-            gfxa_createText_Int("2|+100ms Death Timer - ", 0x00, 1, 30, deathTimerMax / 5 + 5, 0x07, 4);
-            gfxa_createText("Points", 0xFF, gfx_GetStringWidth("2|+100ms Death Timer - 0000"), 30);
+            gfxa_createText_Int("2|+1s Death Timer - ", 0x00, 1, 30, ((deathTimerMax + 10) / 5 + 5) * 3, pointColorCheck(points, ((deathTimerMax + 10) / 5 + 5) * 3, 0x07, 0xE0), 4);
+            gfxa_createText("Points", 0xFF, gfx_GetStringWidth("2|+1s Death Timer - 0000"), 30);
 
             gfxa_createText("0|Exit", 0x00, 1, 45);
+
 
             bool menuDone = false;
 
@@ -115,15 +132,17 @@ int main(void) {
 
                 key = kb_Data[4];
 
-                if (key == kb_2 && points >= deathTimerMax / 5 + 5) {
-                    points -= deathTimerMax / 5 + 5;
-                    deathTimerMax++;
+                if (key == kb_2 && points >= ((deathTimerMax + 10) / 5 + 5) * 3) {
+                    points -= ((deathTimerMax + 10) / 5 + 5) * 3;
+                    deathTimerMax += 10;
                     menuDone = true;
                     break;
                 }
 
             } while (!menuDone);
             gfx_FillScreen(0xFF);
+            gfxa_createText_Int("Points: ", 0x00, 1, 1, points, 0x00);
+            gfxa_createText_Int("Time until death: ", 0x00, 1, GFX_LCD_HEIGHT - 10, (deathTimerMax + 10 - deathTimer) / 10, 0x00);
         }
 
         gfx_SetColor(0xFF);
@@ -132,14 +151,13 @@ int main(void) {
             checkInRange(curY + 5, circleY, circleRadius * 2)) {
             deathTimer = 0;
             points++;
+            totalPoints++;
             gfx_FillCircle(circleX, circleY, circleRadius);
             gfx_FillRectangle(1, 1, GFX_LCD_WIDTH, 10);
-            gfx_SetTextXY(1, 1);
-            gfx_PrintString("Points: ");
-            gfx_SetTextXY(gfx_GetStringWidth("Points: "), 1);
-            gfx_PrintInt(points, 2);
-            circleX = randInt(30, 200);
-            circleY = randInt(30, 200);
+            gfxa_createText_Int("Points: ", 0x00, 1, 1, points, 0x00);
+            gfxa_createText_Int("Total Points: ", 0x00, GFX_LCD_WIDTH - gfx_GetStringWidth("Total Points: 0000"), 1, totalPoints, 0x00);
+            circleX = randInt(30 ,GFX_LCD_WIDTH - 30);
+            circleY = randInt(30, GFX_LCD_HEIGHT - 30);
             // dbg_printf("close to circle\n");
         }
         else {
@@ -148,7 +166,7 @@ int main(void) {
                 gfx_FillRectangle(1, GFX_LCD_HEIGHT - 10, GFX_LCD_WIDTH, 10);
             }
 
-            gfxa_createText_Int("Time until death (sec): ", 0x00, 1, GFX_LCD_HEIGHT - 10, (deathTimerMax + 10 - deathTimer) / 10, 0x00);
+            gfxa_createText_Int("Time until death: ", 0x00, 1, GFX_LCD_HEIGHT - 10, (deathTimerMax + 10 - deathTimer) / 10, 0x00);
             // dbg_printf("timer++\n");
             dbg_printf("deathTimer %d\n", deathTimer);
             dbg_printf("deathTimerMax %d\n", deathTimerMax);
@@ -166,19 +184,33 @@ int main(void) {
 
         curX += addX * 5;
         curY += addY * 5;
-        gfx_SetColor(0x00);
-        gfx_FillRectangle(curX, curY, 10, 10);
-        gfx_SetColor(0x47);
-        gfx_FillCircle(circleX, circleY, circleRadius);
+        gfxa_createFillRectangle(curX, curY, 10, 10, 0x00);
+
+        gfxa_createFillCircle(circleX, circleY, circleRadius, 0xE0);
 
         msleep(100);
 
     } while (kb_Data[1] != kb_2nd && dead != true);
 
     gfx_End();
+    uint8_t handle;
+    int data[] = { points, totalPoints, circleRadius, deathTimerMax };
+    handle = ti_Open("FakeSnake_save", "w");
+
+    ti_Write(data, sizeof(int), sizeof(data)/sizeof(int), handle);
+
+    ti_Close(handle);
 
     return 0;
 }
+
+uint8_t pointColorCheck(int points, int needed, uint8_t color1, uint8_t color2) {
+    if (points >= needed) {
+        return color1;
+    }
+    return color2;
+}
+
 
 void gfxa_createText(const char *string, uint8_t color, int x, int y) {
     gfx_SetTextFGColor(color);
@@ -190,8 +222,18 @@ void gfxa_createText_Int(const char *string, uint8_t color, int x, int y, int ad
     gfx_SetTextFGColor(color);
     gfx_SetTextXY(x, y);
     gfx_PrintString(string);
-    gfx_SetTextXY(gfx_GetStringWidth(string), y);
+    gfx_SetTextXY(gfx_GetStringWidth(string) + x - 1, y);
     gfx_SetTextFGColor(addonColor);
     gfx_PrintInt(addonInt, length);
+}
+
+void gfxa_createFillRectangle(int x, int y, int width, int height, uint8_t color) {
+    gfx_SetColor(color);
+    gfx_FillRectangle(x, y, width, height);
+}
+
+void gfxa_createFillCircle(int x, int y, int radius, uint8_t color) {
+    gfx_SetColor(color);
+    gfx_FillCircle(x, y, radius);
 }
 
