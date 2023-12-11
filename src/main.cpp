@@ -27,7 +27,7 @@ void gfxa_createFillCircle(int x, int y, int radius, uint8_t color);
 int main(void) {
     /* Key variable */
     kb_key_t key;
-
+    
     int curX = 20;
     int curY = 20;
 
