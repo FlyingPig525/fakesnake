@@ -107,7 +107,7 @@ int main(void) {
             gfxa_createText("Points", 0x00, gfx_GetStringWidth("1|More Apple Width - 0000 "), 15);
 
             gfxa_createText_Int("2|+1s Death Timer - ", 0x00, 1, 30, ((deathTimerMax + 10) / 5 + 5) * 3, pointColorCheck(points, ((deathTimerMax + 10) / 5 + 5) * 3, 0x07, 0xE0), 4);
-            gfxa_createText("Points", 0x00, gfx_GetStringWidth("2|+1s Death Timer - 0000"), 30);
+            gfxa_createText("Points", 0x00, gfx_GetStringWidth("2|+1s Death Timer - 0000 "), 30);
 
             gfxa_createText("0|Exit", 0x00, 1, 45);
 
