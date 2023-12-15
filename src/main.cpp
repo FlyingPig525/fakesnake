@@ -281,7 +281,7 @@ void gfxa_createFillRectangle(int x, int y, int width, int height, uint8_t color
 	gfx_FillRectangle(x, y, width, height);
 }
 
-/*] Pring a full colored circle to the screen */
+/* Print a full colored circle to the screen */
 void gfxa_createFillCircle(int x, int y, int radius, uint8_t color)
 {
 	gfx_SetColor(color);
