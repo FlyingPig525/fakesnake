@@ -4,7 +4,6 @@
 #include <graphx.h>
 #include <keypadc.h>
 #include <stdlib.h>
-#include <sys/rtc.h>
 #include <sys/timers.h>
 #include <sys/util.h>
 #include <ti/screen.h>
