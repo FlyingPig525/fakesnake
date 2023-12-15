@@ -169,7 +169,7 @@ int main(void)
 			gfxa_createText_Int("Total Points: ", 0x00, GFX_LCD_WIDTH - gfx_GetStringWidth("Total Points: 0000"), 1, totalPoints, 0x00);
 		}
 
-		if (checkInRange(curX + circleRadius, circleX, circleRadius * 2) && checkInRange(curY + circleRadius, circleY, circleRadius * 2))
+		if (checkInRange(curX + 5, circleX, circleRadius * 2) && checkInRange(curY + 5, circleY, circleRadius * 2))
 		{
 			/* Collect "apple" */
 			deathTimer = 0;
