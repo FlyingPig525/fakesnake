@@ -8,6 +8,11 @@
 #include <sys/util.h>
 #include <ti/screen.h>
 
+/// @brief Check if `a` is in a certain number of `b`
+/// @param a The `int` to check on `b`
+/// @param b The `int` to check `a` with
+/// @param deviation How far the `a` must be from `b` to return true
+/// @return Whether or not `a` is within `deviation` of `b`
 bool checkInRange(int a, int b, int deviation)
 {
 	if (a < b)
@@ -169,7 +174,7 @@ int main(void)
 			gfxa_createText_Int("Total Points: ", 0x00, GFX_LCD_WIDTH - gfx_GetStringWidth("Total Points: 0000"), 1, totalPoints, 0x00);
 		}
 
-		if (checkInRange(curX + 5, circleX, circleRadius * 2) && checkInRange(curY + 5, circleY, circleRadius * 2))
+		if (checkInRange(curX + 5, circleX, circleRadius) && checkInRange(curY + 5, circleY, circleRadius * 2))
 		{
 			/* Collect "apple" */
 			deathTimer = 0;
@@ -212,6 +217,7 @@ int main(void)
 		curY += addY * 5;
 		gfxa_createFillRectangle(curX, curY, 10, 10, 0x00);
 
+		gfxa_createFillRectangle(circleX - circleRadius, circleY - circleRadius, circleRadius * 2, circleRadius * 2, 0x00);
 		gfxa_createFillCircle(circleX, circleY, circleRadius, 0xE0);
 
 		msleep(100);
