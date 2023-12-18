@@ -217,7 +217,6 @@ int main(void)
 		curY += addY * 5;
 		gfxa_createFillRectangle(curX, curY, 10, 10, 0x00);
 
-		gfxa_createFillRectangle(circleX - circleRadius, circleY - circleRadius, circleRadius * 2, circleRadius * 2, 0x00);
 		gfxa_createFillCircle(circleX, circleY, circleRadius, 0xE0);
 
 		msleep(100);
@@ -292,4 +291,11 @@ void gfxa_createFillCircle(int x, int y, int radius, uint8_t color)
 {
 	gfx_SetColor(color);
 	gfx_FillCircle(x, y, radius);
+}
+
+uint32_t srandomInt(int min, int max, int seed)
+{
+	srandom(seed);
+
+	return (random() % ((max) - (min) + 1) + (min));
 }
